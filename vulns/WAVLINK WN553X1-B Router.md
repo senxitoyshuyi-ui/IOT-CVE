@@ -19,7 +19,7 @@ The vulnerability resides in the `sub_416D88` function of the `/bin/ioos` compon
 
 The taint flow (instruction level):
 
-![01](./images/Snipaste_2026-08-08_12-17-26.png)
+![01](../images/Snipaste_2026-08-08_12-17-26.png)
   
 
 ```
@@ -33,7 +33,7 @@ The taint flow (instruction level):
 0x417170:  system(buf)                         <- group_name injection point
 0x41717c:  system("uci commit ovpnclient")
 ```
-![02](./images/Snipaste_2026-08-08_12-17-52.png)
+![02](../images/Snipaste_2026-08-08_12-17-52.png)
 
 Since the user input is embedded inside single quotes (`'%s'`), supplying a value such as `x';CMD;'` breaks out of the quoted string and injects an arbitrary command. The actual command executed on the device (captured during testing) is:
 
@@ -45,7 +45,7 @@ The same unsanitized pattern exists in multiple sibling handlers in the same bin
 
 ## Proof of Concept
 
-  ![03](./images/Snipaste_2026-08-08_12-18-04.png)
+  ![03](../images/Snipaste_2026-08-08_12-18-04.png)
 
 Step 1 — login to obtain a session token (`usrid` = SHA256 of the password, default `admin`):
 
@@ -95,10 +95,10 @@ An authenticated attacker can inject arbitrary shell commands through the `group
 
 The vulnerability was dynamically verified against the firmware emulated with qemu-aarch64 + chroot (lighttpd front-end on 80/443 proxying to ioos on 127.0.0.1:81):
 
-  ![04](./images/Snipaste_2026-08-08_12-18-11.png)
+  ![04](../images/Snipaste_2026-08-08_12-18-11.png)
 
 An interactive root reverse shell from the emulated firmware to the Windows host (192.168.1.5:4444) was also confirmed:
 
-  ![05](./images/Snipaste_2026-08-08_12-18-22.png)
+  ![05](../images/Snipaste_2026-08-08_12-18-22.png)
   
 
